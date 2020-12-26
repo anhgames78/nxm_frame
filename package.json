@@ -1,10 +1,10 @@
 {
   "name": "nextjs",
   "version": "4.0.0",
-  "private": true,
+  "private": false,
   "dependencies": {
     "@material-ui/core": "latest",
-    "@material-ui/icon": "latest",
+    "@material-ui/icons": "latest",
     "clsx": "latest",
     "next": "latest",
     "prop-types": "latest",
@@ -17,5 +17,10 @@
     "build": "next build",
     "start": "next start",
     "post-update": "echo \"codesandbox preview only, need an update\" && yarn upgrade --latest"
-  }
+  },
+  "description": "nextjs with mui frame",
+  "main": "index.js",
+  "repository": "https://github.com/anhgames78/nxm_frame.git",
+  "author": "anhgames78 <anhnt78@gmail.com>",
+  "license": "MIT"
 }
