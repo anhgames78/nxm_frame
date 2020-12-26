@@ -1,20 +1,19 @@
 {
   "name": "nextjs",
-  "version": "1.0.0",
+  "version": "4.0.0",
   "private": true,
   "dependencies": {
     "@material-ui/core": "latest",
-    "@material-ui/icon": "latest",
     "clsx": "latest",
     "next": "latest",
     "prop-types": "latest",
     "react": "latest",
-    "react-dom": "latest",
-    "sitemap": "latest"
+    "react-dom": "latest"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "post-update": "echo \"codesandbox preview only, need an update\" && yarn upgrade --latest"
   }
 }
