@@ -1,2 +1,2 @@
-This is a [Next.js](https://nextjs.org/) frame bootstrapped with [Material UI](https://https://material-ui.com/).
+This is a [Next.js](https://nextjs.org/) frame bootstrapped with [Material UI](https://material-ui.com/).
 
