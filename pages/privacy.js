@@ -6,11 +6,13 @@ import Button from '@material-ui/core/Button';
 import ProTip from '../src/ProTip';
 import Link from '../src/Link';
 import Copyright from '../src/Copyright';
+import Nav from '../src/Nav';
 
 export default function Privacy() {
     return (
-      <Container maxWidth="sm">
-        <Box my={4}>
+      <Container fixed disableGutters>
+        <Nav />
+        <Box align="center" my={4}>
           <Typography variant="h4" component="h1" gutterBottom>
             Privacy page.
           </Typography>
@@ -18,8 +20,8 @@ export default function Privacy() {
             Go to the main page
           </Button>
           <ProTip />
-          <Copyright />
         </Box>
+        <Copyright />
       </Container>
     );
 }
