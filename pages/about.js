@@ -5,13 +5,10 @@ import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import ProTip from '../src/ProTip';
 import Link from '../src/Link';
-import Nav from '../src/Nav';
-import Copyright from '../src/Copyright';
 
 export default function About() {
     return (
       <Container fixed disableGutters>
-        <Nav />
         <Box align="center" my={4}>
           <Typography variant="h4" component="h1" gutterBottom>
             Next.js example. This is about page.
@@ -21,7 +18,6 @@ export default function About() {
           </Button>
           <ProTip />
         </Box>
-        <Copyright />
       </Container>
     );
 }
