@@ -1,4 +1,6 @@
 import React from 'react';
+import { UserAuth } from './data';
+
 import Link from './Link';
 import { makeStyles } from '@material-ui/core/styles';
 import { AppBar, Toolbar, IconButton, List, ListItem, ListItemText, Container, Menu, MenuItem } from '@material-ui/core';
@@ -19,7 +21,7 @@ const useStyles = makeStyles({
 
 export default function Nav() {
     const classes = useStyles();
-    const [auth, setAuth] = React.useState(false);
+    const [auth, setAuth] = React.useContext(UserAuth);
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
 

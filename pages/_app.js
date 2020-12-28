@@ -1,4 +1,6 @@
 import React from 'react';
+import { UserAuth } from '../src/data';
+
 import PropTypes from 'prop-types';
 import Head from 'next/head';
 import { ThemeProvider } from '@material-ui/core/styles';
@@ -11,6 +13,7 @@ import Copyright from '../src/Copyright';
 
 export default function MyApp(props) {
   const { Component, pageProps } = props;
+  const [auth, setAuth] = React.useState(false);
 
   React.useEffect(() => {
     // Remove the server-side injected CSS.
@@ -32,9 +35,13 @@ export default function MyApp(props) {
       <ThemeProvider theme={theme}>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
+        <UserAuth.Provider value={[auth, setAuth]}>
         <Nav />
-        <Component {...pageProps} />
-        <Copyright />
+        <div suppressHydrationWarning>
+          {typeof window === 'undefined' ? null : <Component {...pageProps} />}
+        </div>
+       	<Copyright />
+        </UserAuth.Provider>
       </ThemeProvider>
     </React.Fragment>
   );
