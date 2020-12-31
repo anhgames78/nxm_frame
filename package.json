@@ -10,11 +10,16 @@
     "prop-types": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "react-router-dom": "^5.2.0",
-    "sitemap": "latest"
+    "react-router-dom": "latest",
+    "sitemap": "latest",
+    "firebase": "latest",
+    "firebase-admin": "latest",
+    "js-cookie": "latest",
+    "react-firebaseui": "latest",
+    "swr": "latest"
   },
   "scripts": {
-    "dev": "next",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "post-update": "echo \"codesandbox preview only, need an update\" && yarn upgrade --latest"
