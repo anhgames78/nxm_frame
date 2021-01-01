@@ -57,7 +57,7 @@ export default function Index() {
       <Container fixed disableGutters>
         <Box align="center" my={4}>
           <Typography variant="h4" component="h1" gutterBottom>
-            <p>You're signed in. Email: {user.email}</p>
+            <p>You're signed in. Email: {user.email}.Token: {user.token}</p>
             <p
               style={{
                 display: 'inline-block',
