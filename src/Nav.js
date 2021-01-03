@@ -1,5 +1,7 @@
 import React from 'react';
 import { UserAuth } from './data';
+import { useRouter } from 'next/router';
+import { useUser } from '../utils/auth/useUser';
 
 import Link from './Link';
 import { makeStyles } from '@material-ui/core/styles';
@@ -24,10 +26,17 @@ export default function Nav() {
     const [auth, setAuth] = React.useContext(UserAuth);
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
+    const router = useRouter();
+    const { user, logout } = useUser();
 
-    const handleChange = () => {
-        setAuth(!auth);
+    const handleLogIn = () => {
         setAnchorEl(null);
+        router.push('/auth')
+    };
+
+    const handleLogOut = () => {
+        setAnchorEl(null);
+        logout();
     };
 
     const handleMenu = (event) => {
@@ -41,7 +50,7 @@ export default function Nav() {
         <AppBar position="static">
       <Toolbar>
         <Container className={classes.navDisplayFlex}>
-          <IconButton edge="start" color="inherit" aria-label="home">
+          <IconButton edge="start" color="inherit" aria-label="home" onClick={() => router.push('/')}>
             <Home fontSize="large" />
           </IconButton>
           <List
@@ -91,8 +100,8 @@ export default function Nav() {
 	                open={open}
 	                onClose={handleClose}
 	              >
-	                <MenuItem onClick={handleChange}>Log In</MenuItem>
-	                <MenuItem onClick={handleClose}>Sign Up</MenuItem>
+	                <MenuItem onClick={handleLogIn}>Log In</MenuItem>
+	                <MenuItem onClick={handleLogIn}>Sign Up</MenuItem>
 	              </Menu>
 	            </div>
 	        )}
@@ -123,7 +132,7 @@ export default function Nav() {
 	                open={open}
 	                onClose={handleClose}
 	              >
-	                <MenuItem onClick={handleChange}>Log Out</MenuItem>
+	                <MenuItem onClick={handleLogOut}>Log Out</MenuItem>
 	                <MenuItem onClick={handleClose}>My account</MenuItem>
 	              </Menu>
 	            </div>

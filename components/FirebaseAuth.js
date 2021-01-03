@@ -1,3 +1,6 @@
+import React from 'react';
+import { UserAuth } from '../src/data';
+
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth'
 import firebase from 'firebase/app'
 import 'firebase/auth'
@@ -26,11 +29,13 @@ const firebaseAuthConfig = {
     signInSuccessWithAuthResult: async ({ user }, redirectUrl) => {
       const userData = await mapUserData(user)
       setUserCookie(userData)
+      setAuth(true)
     },
   },
 }
 
 const FirebaseAuth = () => {
+  const [auth, setAuth] = React.useContext(UserAuth);
   return (
     <div>
       <StyledFirebaseAuth

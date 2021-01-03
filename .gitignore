@@ -16,3 +16,7 @@ yarn-error.log*
 
 # Next.js
 /.next
+
+#some files
+node.exe
+npm.cmd

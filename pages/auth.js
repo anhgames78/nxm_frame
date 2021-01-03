@@ -9,7 +9,7 @@ const Auth = () => {
                 textAlign: 'center',
                 fontSize: '40px',
                 }}>
-                Sign in
+                Log In -/- Sign Up
             </p>
       		<div>
         		<FirebaseAuth />
