@@ -13,7 +13,7 @@ import { useUser } from '../utils/auth/useUser'
 const fetcher = (url, token) =>
   fetch(url, {
     method: 'GET',
-    headers: new Headers({ 'Content-Type': 'application/json', token }),
+    headers: new Headers({ 'Content-Type': 'application/json', 'token':token }),
     credentials: 'same-origin',
   }).then((res) => res.json())
 
@@ -57,7 +57,7 @@ export default function Index() {
       <Container fixed disableGutters>
         <Box align="center" my={4}>
           <Typography variant="h4" component="h1" gutterBottom>
-            <p>You're signed in. Email: {user.email}.Token: {user.token}</p>
+            <p>You're signed in. Email: {user.email}.</p>
             <p
               style={{
                 display: 'inline-block',
