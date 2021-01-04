@@ -9,15 +9,12 @@ import {
   getUserFromCookie,
 } from './userCookies'
 import { mapUserData } from './mapUserData'
-import { UserAuth } from '../../src/data';
 
 initFirebase()
 
 const useUser = () => {
   const [user, setUser] = useState()
   const router = useRouter()
-  const [auth, setAuth] = useContext(UserAuth);
-
 
   const logout = async () => {
 
@@ -26,8 +23,7 @@ const useUser = () => {
       .signOut()
       .then(() => {
         // Sign-out successful.
-        router.push('/auth')
-        setAuth(false)
+        router.push('/')
       })
       .catch((e) => {
         console.error(e)
@@ -45,11 +41,9 @@ const useUser = () => {
           const userData = await mapUserData(user)
           setUserCookie(userData)
           setUser(userData)
-          setAuth(true)
         } else {
           removeUserCookie()
           setUser()
-          setAuth(false)
         }
       })
 
