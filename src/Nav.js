@@ -1,5 +1,4 @@
 import React from 'react';
-import { UserAuth } from './data';
 import { useRouter } from 'next/router';
 import { useUser } from '../utils/auth/useUser';
 
@@ -24,7 +23,6 @@ const useStyles = makeStyles({
 
 export default function Nav() {
     const classes = useStyles();
-    const [auth, setAuth] = React.useContext(UserAuth);
     const [anchorEl, setAnchorEl] = React.useState(null);
     const openMenu = Boolean(anchorEl);
     const router = useRouter();
