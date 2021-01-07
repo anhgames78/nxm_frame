@@ -49,6 +49,7 @@ export default function Index() {
           {user && (
             <Typography variant="h4" component="h1" gutterBottom>
               <p>You're signed in. Email: {user.email}.</p>
+              <Link href='/chat'>Go to chat page!</Link>
               <p
                 style={{
                   display: 'inline-block',

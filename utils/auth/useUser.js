@@ -1,21 +1,20 @@
 import { useEffect, useState, useContext } from 'react'
 import { useRouter } from 'next/router'
-import firebase from 'firebase/app'
-import 'firebase/auth'
-import initFirebase from '../auth/initFirebase'
+import { firebase } from './initFirebase'
 import {
   removeUserCookie,
   setUserCookie,
   getUserFromCookie,
 } from './userCookies'
 import { mapUserData } from './mapUserData'
+require('firebase/database');
 
-initFirebase()
+const database = firebase.database();
 
 const useUser = () => {
-  const [user, setUser] = useState()
-  const router = useRouter()
-
+  const [user, setUser] = useState();
+  const router = useRouter();
+  
   const logout = async () => {
 
     return firebase
@@ -63,4 +62,4 @@ const useUser = () => {
   return { user, logout }
 }
 
-export { useUser }
+export { useUser, database }
