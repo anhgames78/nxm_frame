@@ -47,7 +47,7 @@ const groupsRef = database.ref('groups');
 	                  		cursor: 'pointer',
 	                	}}
 	                >
-	                {groups[1]}
+	                {groups}
 	                </p>
 	              	<p
 	                	style={{

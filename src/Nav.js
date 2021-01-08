@@ -39,6 +39,11 @@ export default function Nav() {
         logout();
     };
 
+    const handleAccount = () => {
+        setAnchorEl(null);
+        router.push('/profile');
+    };
+
     const handleMenu = (event) => {
         setAnchorEl(event.currentTarget);
     };
@@ -138,7 +143,7 @@ export default function Nav() {
 			                onClose={handleClose}
 			              >
 			                <MenuItem onClick={handleLogOut}>Log Out</MenuItem>
-			                <MenuItem onClick={handleClose}>My account</MenuItem>
+			                <MenuItem onClick={handleAccount}>My account</MenuItem>
 			              </Menu>
 			            </div>
 			        )}
