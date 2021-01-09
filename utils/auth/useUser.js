@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from 'react'
 import { useRouter } from 'next/router'
-import { firebase } from './initFirebase'
+import firebase from './initFirebase'
 import {
   removeUserCookie,
   setUserCookie,

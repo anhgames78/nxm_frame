@@ -7,12 +7,19 @@ import Chip from '@material-ui/core/Chip';
 import Avatar from '@material-ui/core/Avatar';
 import ProTip from '../src/ProTip';
 import Link from '../src/Link';
-import { firebase } from '../utils/auth/initFirebase'
+import firebase from '../utils/auth/initFirebase'
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Dialog from '@material-ui/core/Dialog';
+import TextField from '@material-ui/core/TextField';
 
 const useStyles = makeStyles((theme) => ({
+	root: {
+    '& > *': {
+      margin: theme.spacing(1),
+      width: '25ch',
+    },
+  },
   chip: {
     margin: theme.spacing(0.5),
     display: 'flex',
@@ -33,12 +40,24 @@ const StyledAvatar = withStyles({
   },
 })(Avatar);
 
+export default function Profile() {
+	const [open, setOpen] = React.useState(false);
+	const [name, setName] = React.useState(null);
+	const [user, setUser] = React.useState(firebase.auth().currentUser);
+	firebase.auth().onAuthStateChanged(function(user) {
+  if (user) {
+    // User is signed in.
+    setUser(firebase.auth().currentUser);
+  }
+});
+	const [profile, setProfile] = React.useState('hello');
+	const [newvalue, setNewvalue] = React.useState();
+	const classes = useStyles();
 
-var user = firebase.auth().currentUser;
-var name, email, photoUrl, uid, emailVerified;
+	var email, photoUrl, uid, emailVerified;
 
 if (user != null) {
-  name = user.displayName;
+  if (name===null) {setName(user.displayName);}
   email = user.email;
   photoUrl = user.photoURL;
   emailVerified = user.emailVerified;
@@ -47,17 +66,49 @@ if (user != null) {
                    // you have one. Use User.getToken() instead.
 }
 
-export default function Profile() {
-	const [open, setOpen] = React.useState(false);
-	const [profile, setProfile] = React.useState('hello');
-	const classes = useStyles();
-
 	const handleClick = (event) => {
     setOpen(true);
     setProfile(event.target.getAttribute("aria-label"));
   };
   
   const handleClose = () => {
+    setOpen(false);
+  };
+  const handleSubmit = (event) => {
+  	event.preventDefault();
+  	if (profile==="email"){
+  		var credential;
+		// Prompt the user to re-provide their sign-in credentials
+		user.reauthenticateWithCredential(credential).then(function() {
+  		// User re-authenticated.
+	  		user.updateEmail(newvalue).then(function() {
+	  			// Update successful.
+	  		}).catch(function(error) {
+	  			// An error happened.
+			});
+		}).catch(function(error) {
+  		// An error happened.
+		});
+  	}
+  	if (profile==="name"){
+  		user.updateProfile({
+  			displayName: newvalue
+  		}).then(function() {
+  			// Update successful.
+  			setName(user.displayName);
+  		}).catch(function(error) {
+  			// An error happened.
+  		});
+  	}
+  	if (profile==="photo"){
+  		user.updateProfile({
+  			photoURL: newvalue
+  		}).then(function() {
+  			// Update successful.
+  		}).catch(function(error) {
+  			// An error happened.
+  		});
+  	}
     setOpen(false);
   };
     return (
@@ -98,6 +149,11 @@ export default function Profile() {
           </Button>
           <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
       		<DialogTitle id="simple-dialog-title">Change your {profile} </DialogTitle>
+      		<form className={classes.root} noValidate autoComplete="off" onSubmit={handleSubmit}>
+      			<TextField id="standard-basic" label="Enter your new ${profile}" onChange={(e)=>{setNewvalue(e.target.value)}} />
+      			<Button onClick={handleSubmit}>Change</Button>
+      			<Button onClick={handleClose}>Cancel</Button>
+    		</form>
       	</Dialog>
           <ProTip />
         </Box>
