@@ -3,6 +3,7 @@ import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
+import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Chip from '@material-ui/core/Chip';
 import Avatar from '@material-ui/core/Avatar';
 import ProTip from '../src/ProTip';
@@ -17,7 +18,9 @@ const useStyles = makeStyles((theme) => ({
 	root: {
     '& > *': {
       margin: theme.spacing(1),
-      width: '25ch',
+      padding: theme.spacing(1),
+      width: '95%',
+      justifyContent: 'center',
     },
   },
   chip: {
@@ -41,30 +44,41 @@ const StyledAvatar = withStyles({
 })(Avatar);
 
 export default function Profile() {
+		var photoUrl, uid, emailVerified;
+
 	const [open, setOpen] = React.useState(false);
 	const [name, setName] = React.useState(null);
+	const [email, setEmail] = React.useState(null);
+	const [password, setPassword] = React.useState('12345678');
 	const [user, setUser] = React.useState(firebase.auth().currentUser);
 	firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
     // User is signed in.
     setUser(firebase.auth().currentUser);
+    setName(user.displayName);
+    setEmail(user.email);
+  //name = user.displayName;
+  //email = user.email;
+  //photoUrl = user.photoURL;
+ // emailVerified = user.emailVerified;
+  //uid = user.uid;
   }
 });
 	const [profile, setProfile] = React.useState('hello');
 	const [newvalue, setNewvalue] = React.useState();
 	const classes = useStyles();
 
-	var email, photoUrl, uid, emailVerified;
 
-if (user != null) {
-  if (name===null) {setName(user.displayName);}
-  email = user.email;
-  photoUrl = user.photoURL;
-  emailVerified = user.emailVerified;
-  uid = user.uid;  // The user's ID, unique to the Firebase project. Do NOT use
+//if (user != null) {
+  //if (name===null) {setName(user.displayName);}
+  //name = user.displayName;
+  //email = user.email;
+ // photoUrl = user.photoURL;
+  //emailVerified = user.emailVerified;
+  //uid = user.uid;  // The user's ID, unique to the Firebase project. Do NOT use
                    // this value to authenticate with your backend server, if
                    // you have one. Use User.getToken() instead.
-}
+//}
 
 	const handleClick = (event) => {
     setOpen(true);
@@ -77,19 +91,21 @@ if (user != null) {
   const handleSubmit = (event) => {
   	event.preventDefault();
   	if (profile==="email"){
-  		var credential;
-		// Prompt the user to re-provide their sign-in credentials
-		user.reauthenticateWithCredential(credential).then(function() {
+//show new dialog to get password from user and process update email
+  var credential = firebase.auth.EmailAuthProvider.credential(email, password);
+user.reauthenticateWithCredential(credential).then(function() {
   		// User re-authenticated.
 	  		user.updateEmail(newvalue).then(function() {
 	  			// Update successful.
+	  			setEmail(user.email);
 	  		}).catch(function(error) {
 	  			// An error happened.
+	  			alert("wrong password");
 			});
 		}).catch(function(error) {
   		// An error happened.
 		});
-  	}
+}
   	if (profile==="name"){
   		user.updateProfile({
   			displayName: newvalue
@@ -111,6 +127,16 @@ if (user != null) {
   	}
     setOpen(false);
   };
+
+  //for new dialog
+  const handleClickShowPassword = () => {
+    setValues(!showPassword);
+  };
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
     return (
       <Container fixed disableGutters>
         <Box align="center" my={4}>
@@ -148,11 +174,16 @@ if (user != null) {
             Go to the main page
           </Button>
           <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
-      		<DialogTitle id="simple-dialog-title">Change your {profile} </DialogTitle>
+          	<DialogTitle id="simple-dialog-title">
+          		<Typography variant="h6" align="center">Change your {profile}</Typography>
+          	</DialogTitle>
+
       		<form className={classes.root} noValidate autoComplete="off" onSubmit={handleSubmit}>
-      			<TextField id="standard-basic" label="Enter your new ${profile}" onChange={(e)=>{setNewvalue(e.target.value)}} />
-      			<Button onClick={handleSubmit}>Change</Button>
-      			<Button onClick={handleClose}>Cancel</Button>
+      			<TextField autoFocus id="standard-basic" label="Enter your new ${profile}" onChange={(e)=>{setNewvalue(e.target.value)}} />
+      			<ButtonGroup variant="contained" >
+      				<Button color="primary"	onClick={handleSubmit}>Change</Button>
+      				<Button color="secondary" onClick={handleClose}>Cancel</Button>
+  				</ButtonGroup>
     		</form>
       	</Dialog>
           <ProTip />
@@ -160,3 +191,22 @@ if (user != null) {
       </Container>
     );
 }
+
+//new dialog
+<Input
+            id="standard-adornment-password"
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={handleClickShowPassword}
+                  onMouseDown={handleMouseDownPassword}
+                >
+                  {showPassword ? <Visibility /> : <VisibilityOff />}
+                </IconButton>
+              </InputAdornment>
+            }
+          />
