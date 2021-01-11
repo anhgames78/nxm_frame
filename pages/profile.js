@@ -12,7 +12,9 @@ import firebase from '../utils/auth/initFirebase'
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Dialog from '@material-ui/core/Dialog';
-import TextField from '@material-ui/core/TextField';
+import { TextField, InputAdornment, IconButton } from "@material-ui/core";
+import Visibility from "@material-ui/icons/Visibility";
+import VisibilityOff from "@material-ui/icons/VisibilityOff";
 
 const useStyles = makeStyles((theme) => ({
 	root: {
@@ -47,9 +49,12 @@ export default function Profile() {
 		var photoUrl, uid, emailVerified;
 
 	const [open, setOpen] = React.useState(false);
+  const [openPass, setOpenPass] = React.useState(false);
+  const [openErr, setOpenErr] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
 	const [name, setName] = React.useState(null);
 	const [email, setEmail] = React.useState(null);
-	const [password, setPassword] = React.useState('12345678');
+	const [password, setPassword] = React.useState("");
 	const [user, setUser] = React.useState(firebase.auth().currentUser);
 	firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
@@ -88,24 +93,21 @@ export default function Profile() {
   const handleClose = () => {
     setOpen(false);
   };
+
+  const handleClosePass = () => {
+    setOpenPass(false);
+  };
+  
+  const handleCloseErr = () => {
+    setOpenErr(false);
+  };
+
   const handleSubmit = (event) => {
   	event.preventDefault();
   	if (profile==="email"){
-//show new dialog to get password from user and process update email
-  var credential = firebase.auth.EmailAuthProvider.credential(email, password);
-user.reauthenticateWithCredential(credential).then(function() {
-  		// User re-authenticated.
-	  		user.updateEmail(newvalue).then(function() {
-	  			// Update successful.
-	  			setEmail(user.email);
-	  		}).catch(function(error) {
-	  			// An error happened.
-	  			alert("wrong password");
-			});
-		}).catch(function(error) {
-  		// An error happened.
-		});
-}
+      setOpen(false);
+      setOpenPass(true);
+    }
   	if (profile==="name"){
   		user.updateProfile({
   			displayName: newvalue
@@ -129,13 +131,28 @@ user.reauthenticateWithCredential(credential).then(function() {
   };
 
   //for new dialog
-  const handleClickShowPassword = () => {
-    setValues(!showPassword);
+  const handleShowPassword = () => {
+    setShowPassword(!showPassword);
   };
 
-  const handleMouseDownPassword = (event) => {
+  const handlePassword = (event) => {
     event.preventDefault();
-  };
+    var credential = firebase.auth.EmailAuthProvider.credential(email, password);
+    user.reauthenticateWithCredential(credential).then(function() {
+
+      user.updateEmail(newvalue).then(function() {
+        // Update successful.
+        setEmail(user.email);
+        setOpenPass(false);
+        }).catch(function(error) {
+          // An error happened.
+        });
+
+      }).catch(function(error) {
+        // An error happened.
+        setOpenErr(true);
+      });
+    }
 
     return (
       <Container fixed disableGutters>
@@ -173,6 +190,7 @@ user.reauthenticateWithCredential(credential).then(function() {
           <Button variant="contained" color="primary" component={Link} naked href="/">
             Go to the main page
           </Button>
+
           <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
           	<DialogTitle id="simple-dialog-title">
           		<Typography variant="h6" align="center">Change your {profile}</Typography>
@@ -186,27 +204,42 @@ user.reauthenticateWithCredential(credential).then(function() {
   				</ButtonGroup>
     		</form>
       	</Dialog>
+
+        <Dialog onClose={handleClosePass} aria-labelledby="dialog-password" open={openPass}>
+  <DialogTitle id="dialog-password">
+    <Typography variant="h6" align="center">Enter your password to process.</Typography>
+  </DialogTitle>
+  <form className={classes.root} noValidate autoComplete="off" onSubmit={handlePassword}>
+    <TextField
+      autoFocus
+      label='Re-enter your password: '
+      variant="outlined"
+      value={password}
+      type={showPassword ? "text" : "password"} 
+      onChange={(event) => setPassword(event.target.value)}
+      InputProps={{ 
+        endAdornment: (
+          <InputAdornment position="end">
+            <IconButton
+              aria-label="toggle password visibility"
+              onClick={handleShowPassword}
+            >
+              {showPassword ? <Visibility /> : <VisibilityOff />}
+            </IconButton>
+          </InputAdornment>
+        )
+      }}
+    />
+  </form>
+</Dialog>
+
+<Dialog onClose={handleCloseErr} aria-labelledby="dialog-error-password" open={openErr}>
+  <DialogTitle id="dialog-error-password">
+  <Typography variant="h6" align="center">Your password is incorrect.</Typography>
+  </DialogTitle>
+  </Dialog>
           <ProTip />
         </Box>
       </Container>
     );
 }
-
-//new dialog
-<Input
-            id="standard-adornment-password"
-            type={showPassword ? 'text' : 'password'}
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            endAdornment={
-              <InputAdornment position="end">
-                <IconButton
-                  aria-label="toggle password visibility"
-                  onClick={handleClickShowPassword}
-                  onMouseDown={handleMouseDownPassword}
-                >
-                  {showPassword ? <Visibility /> : <VisibilityOff />}
-                </IconButton>
-              </InputAdornment>
-            }
-          />
