@@ -4,11 +4,12 @@ import { useUser } from '../utils/auth/useUser';
 
 import Link from './Link';
 import { makeStyles } from '@material-ui/core/styles';
-import { AppBar, Toolbar, IconButton, List, ListItem, ListItemText, Container, Menu, MenuItem } from '@material-ui/core';
-import { AccountCircle, Face, Home } from '@material-ui/icons';
+import { AppBar, Toolbar, IconButton, List, ListItem, ListItemText, Container, Menu, MenuItem, Avatar } from '@material-ui/core';
+import { AccountCircle, Home } from '@material-ui/icons';
 import AuthDialog from '../components/AuthDialog';
+import { deepPurple } from '@material-ui/core/colors';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
     navDisplayFlex: {
         display: "flex",
         justifyContent: "space-between"
@@ -18,8 +19,14 @@ const useStyles = makeStyles({
         textTransform: "uppercase",
         color: "white",
         fontSize: '2rem'
+    },
+    avatarProps: {
+		width: theme.spacing(5),
+    	height: theme.spacing(5),
+    	color: theme.palette.getContrastText(deepPurple[500]),
+    	backgroundColor: deepPurple[500],
     }
-});
+}));
 
 export default function Nav() {
     const classes = useStyles();
@@ -125,7 +132,9 @@ export default function Nav() {
 			                onClick={handleMenu}
 			                color="inherit"
 			              >
-			                <Face fontSize="large" />
+			                <Avatar className={classes.avatarProps}	src={user.photo?(user.photo):""}>
+          						{user.photo?"":(user.email.charAt(0))}
+      						</Avatar>
 			              </IconButton>
 			              <Menu
 			                id="menu-appbar"

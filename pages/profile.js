@@ -46,7 +46,7 @@ const StyledAvatar = withStyles({
 })(Avatar);
 
 export default function Profile() {
-		var photoUrl, uid, emailVerified;
+		var uid, emailVerified;
 
 	const [open, setOpen] = React.useState(false);
   const [openPass, setOpenPass] = React.useState(false);
@@ -54,6 +54,7 @@ export default function Profile() {
   const [showPassword, setShowPassword] = React.useState(false);
 	const [name, setName] = React.useState(null);
 	const [email, setEmail] = React.useState(null);
+  const [photo, setPhoto] = React.useState(null);
 	const [password, setPassword] = React.useState("");
 	const [user, setUser] = React.useState(firebase.auth().currentUser);
 	firebase.auth().onAuthStateChanged(function(user) {
@@ -62,6 +63,7 @@ export default function Profile() {
     setUser(firebase.auth().currentUser);
     setName(user.displayName);
     setEmail(user.email);
+    setPhoto(user.photoURL);
   //name = user.displayName;
   //email = user.email;
   //photoUrl = user.photoURL;
@@ -123,6 +125,7 @@ export default function Profile() {
   			photoURL: newvalue
   		}).then(function() {
   			// Update successful.
+        setPhoto(user.photoURL);
   		}).catch(function(error) {
   			// An error happened.
   		});
@@ -180,7 +183,7 @@ export default function Profile() {
       />
       <Chip
         avatar={<Avatar>P</Avatar>}
-        label={photoUrl}
+        label={photo}
         aria-label='photo'
         clickable
         color="primary"
