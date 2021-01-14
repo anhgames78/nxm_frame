@@ -1,14 +1,40 @@
 import React from 'react';
-import { BrowserRouter as Router, Switch, Route, Link as RLink } from 'react-router-dom';
-import { Container, Typography, Box, Button } from '@material-ui/core';
+import { Container, Typography, Box, Button, Chip, Avatar } from '@material-ui/core';
+import { makeStyles, withStyles } from '@material-ui/core/styles';
+
 import Link from '../src/Link';
 import ProTip from '../src/ProTip';
 
 import { useUser, database } from '../utils/auth/useUser';
 
+const useStyles = makeStyles((theme) => ({
+	root: {
+    '& > *': {
+      margin: theme.spacing(1),
+      padding: theme.spacing(1),
+      width: '95%',
+      justifyContent: 'center',
+    },
+  },
+  chip: {
+    margin: theme.spacing(0.5),
+    display: 'flex',
+    justifyContent: 'left',
+    width: '50%',
+  },
+  }));
+
+
+  
+
 export default function Chat() {
+	const classes = useStyles();
+	const [show, setShow] = React.useState(false);
+	const [room, setRoom] = React.useState('');
 	const [groups, setGroups] = React.useState([]);
   	const { user, logout } = useUser();
+
+
 
   	React.useEffect(() => {
       // You know that the user is loaded: either logged in or out!
@@ -28,27 +54,28 @@ const groupsRef = database.ref('groups');
     }, []);
 
 	return (
-	    <Router>
-	      <Container fixed disableGutters>
+		<React.Fragment>
+		{!show && (
+			<Container fixed disableGutters>
 	        <Box align="center" my={4}>
-	          {!user && (
-	            <Typography variant="h4" component="h1" gutterBottom>
-	            	Hi there! You are not signed in.
-	            </Typography>
-	          )}
-	          {user && (
 	            <Typography variant="h4" component="h1" gutterBottom>
 	              	<p>Here is some chat rooms</p>
-	              	<p
-	                	style={{
-	                  		display: 'inline-block',
-	                  		color: 'blue',
-	                  		textDecoration: 'underline',
-	                  		cursor: 'pointer',
-	                	}}
-	                >
-	                {groups}
-	                </p>
+	              	{
+	                	groups.map((value,index)=>
+	                		<Chip
+	                			key={index}
+						        avatar={<Avatar>value.charAt(0)</Avatar>}
+						        label={value}
+						        aria-label={value}
+						        clickable
+						        color="primary"
+						        onClick={(e) => {
+						        	setShow(true);
+						        	setRoom(e.target.getAttribute("aria-label"));
+					        	}}
+						        className={classes.chip}
+					   		/>)
+	                }
 	              	<p
 	                	style={{
 	                		display: 'inline-block',
@@ -60,22 +87,32 @@ const groupsRef = database.ref('groups');
 	              	>
 	                Log out
 	              	</p>
+	              	
 	           	</Typography>
-	          )}
-	          <Switch>
-	              <Route path="/me">
-	                <h2>About me</h2>
-	                <RLink to="/">Back to home</RLink>
-	              </Route>
-	              <Route exact path="/">
-	                {!user && (<h2>Please Log In!!</h2>)}
-	                {user && (<h2>Welcome User!!</h2>)}
-	                <RLink to="/me">About me</RLink>
-	              </Route>
-	          </Switch>
-	          <ProTip />
-	        </Box>
-	      </Container>
-	    </Router>
+	          	<ProTip />
+        	</Box>
+	      	</Container>
+      	)}
+		{show && (
+			<Container fixed disableGutters>
+	        <Box align="center" my={4}>
+					<Typography variant="h4" component="h1" gutterBottom>
+					<p
+	                	style={{
+	                		display: 'inline-block',
+	                  		color: 'red',
+	                  		textDecoration: 'underline',
+	                  		cursor: 'pointer',
+	                	}}
+	                	onClick={() => setShow(false)}
+	              	>
+	              	You join {room}
+	                Back to rooms
+	              	</p>
+	              	</Typography>
+              	</Box>
+          	</Container>
+		)}
+		</React.Fragment>
   )
 }
