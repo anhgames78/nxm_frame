@@ -44,7 +44,7 @@ const groupsRef = database.ref('groups');
   			snapshot.forEach(childSnapshot => {
                 const key = childSnapshot.key;
                 const data = childSnapshot.val();
-                tempGroups.push(data.name);
+                tempGroups.push({id:key,data:data});
                 });
   			setGroups(tempGroups);
   		});
@@ -65,13 +65,18 @@ const groupsRef = database.ref('groups');
 	                		<Chip
 	                			key={index}
 						        avatar={<Avatar>value.charAt(0)</Avatar>}
-						        label={value}
-						        aria-label={value}
+						        label={value.id}
+						        aria-label={value.id}
 						        clickable
 						        color="primary"
 						        onClick={(e) => {
 						        	setShow(true);
 						        	setRoom(e.target.getAttribute("aria-label"));
+						        	database.ref('groups/' + e.target.getAttribute("aria-label") + '/' + user.id).set({
+						        		email:user.email,
+						        		nickname: "",
+						        		profile_picture : user.photo?user.photo:""
+						        		});
 					        	}}
 						        className={classes.chip}
 					   		/>)
@@ -104,7 +109,11 @@ const groupsRef = database.ref('groups');
 	                  		textDecoration: 'underline',
 	                  		cursor: 'pointer',
 	                	}}
-	                	onClick={() => setShow(false)}
+	                	onClick={() => {
+	                		database.ref('groups/' + room + '/' + user.id).remove();
+	                		setShow(false);
+	                		setRoom("");
+	                	}}
 	              	>
 	              	You join {room}
 	                Back to rooms
