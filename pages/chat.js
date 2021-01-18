@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
     margin: theme.spacing(0.5),
     display: 'flex',
     justifyContent: 'left',
-    width: '50%',
+    width: '100%',
   },
   grid: {
     width: 500,
@@ -46,14 +46,14 @@ const useStyles = makeStyles((theme) => ({
 
 
 const ChildComponent = props => (
-  		<Box align={props.align} my={0.5}>
+  		<Box align="left" my={0.5}>
   		<Chip
-		        avatar={<Avatar>M</Avatar>}
+		        avatar={<Avatar></Avatar>}
 		        key={props.key}
 		        label={props.msg}
-		        aria-label="msg from users"
+		        aria-label="msg from other users"
 		        clickable
-		        color="primary"
+		        color="secondary"
 		        onClick={(e) => {
 		        	e.preventDefault();
 	        	}}
@@ -62,11 +62,29 @@ const ChildComponent = props => (
 	   		</Box>
 	   		);
 
+const MyComponent = props => (
+  		<Box align="right" my={0.5}>
+  		<Chip
+		        
+		        key={props.key}
+		        label={props.msg}
+		        aria-label="my message"
+		        
+		        color="primary"
+		        
+		        
+	   		/>
+	   		</Box>
+	   		);
+
+
   	const ParentComponent = props => (
       <div id="children-pane">
       {props.children}
     </div>
   );  
+
+  
 
 export default function Chat() {
 	const classes = useStyles();
@@ -75,22 +93,34 @@ export default function Chat() {
 	const [show, setShow] = React.useState(false);
 	const [room, setRoom] = React.useState(null);
 	const [groups, setGroups] = React.useState([]);
+	const [timejoin, setTimejoin] = React.useState(null);
   	const { user, logout } = useUser();
 
   	const handleSubmit = (event) => {
   	event.preventDefault();
+  	const currentTime = Math.floor(Date.now() / 1000);
   	// Get a key for a new message.
   var newMsgKey = database.ref('messages/' + room).push().key;
 database.ref('messages/' + room + '/' + newMsgKey).set({
 						        		message:message,
 						        		sender: user.id,
-						        		takers: "all"
+						        		takers: "all",
+						        		timestamp: currentTime
 						        		});
 setMessage('');
 }
 
-  	          					
-
+  	const handleRoom = param => {
+        setShow(true);
+	   	setRoom(param);
+	   	setTimejoin(Math.floor(Date.now() / 1000));
+	   	database.ref('groups/' + param + '/' + user.id).set({
+			email: user.email,
+			nickname: "",
+			photo: user.photo?user.photo:""
+			});
+    }
+          					
 
   	React.useEffect(() => {
       // You know that the user is loaded: either logged in or out!
@@ -112,11 +142,20 @@ const groupsRef = database.ref('groups');
   				snapshot.forEach(childSnapshot => {
                 const key = childSnapshot.key;
                 const data = childSnapshot.val();
-                tempMsg.push(<ChildComponent key={key} msg={data.message} align="right"/>);
-                });
-  				setMessages(tempMsg);
+                if (data.timestamp >= timejoin) {
+                	if (user.id==data.sender) {
+                		tempMsg.push(<MyComponent key={key} msg={data.message} />);
+                	} else {
+                		tempMsg.push(<ChildComponent key={key} msg={data.message} />);
+                	}
+
+                
+                }
+  				
   			});
-  	}
+  				setMessages(tempMsg);
+  	});
+  		}
     
   		
         return () => {
@@ -134,22 +173,15 @@ const groupsRef = database.ref('groups');
 	              	<p>Here is some chat rooms</p>
 	              	{
 	                	groups.map((value,index)=>
-	                		value && <Chip
+	                		<Chip
 	                			key={index}
 						        avatar={<Avatar>value.charAt(0)</Avatar>}
 						        label={value.data.name}
 						        aria-label={value.id}
 						        clickable
 						        color="primary"
-						        onClick={(e) => {
-						        	setShow(true);
-						        	setRoom(e.target.getAttribute("aria-label"));
-						        	database.ref('groups/' + e.target.getAttribute("aria-label") + '/' + user.id).set({
-						        		email:user.email,
-						        		nickname: "",
-						        		profile_picture : user.photo?user.photo:""
-						        		});
-					        	}}
+						        onClick={() => handleRoom(value.id)}
+						        	
 						        className={classes.chipGroup}
 					   		/>)
 	                }
@@ -184,8 +216,8 @@ const groupsRef = database.ref('groups');
           					{
           						
           						Object.entries(groups.find(x => x.id === room).data).map(x =>
-          										x[1].email && <Chip
-						        avatar={<Avatar>M</Avatar>}
+          									x[1].email && <Chip
+						        avatar={<Avatar src={x[1].photo}></Avatar>}
 						        label={x[1].email}
 						        aria-label="no"
 						        clickable
@@ -231,6 +263,7 @@ const groupsRef = database.ref('groups');
 	                		setShow(false);
 	                		setRoom(null);
 	                		setMessages([]);
+	                		setTimejoin(null);
 	                		
 	                	}}
 	              	>
