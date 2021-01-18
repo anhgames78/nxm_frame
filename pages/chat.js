@@ -71,12 +71,27 @@ const ChildComponent = props => (
 export default function Chat() {
 	const classes = useStyles();
 	const [messages, setMessages] = React.useState([]);
+	const [message, setMessage] = React.useState('');
 	const [show, setShow] = React.useState(false);
-	const [room, setRoom] = React.useState('');
+	const [room, setRoom] = React.useState(null);
 	const [groups, setGroups] = React.useState([]);
   	const { user, logout } = useUser();
 
-  	
+  	const handleSubmit = (event) => {
+  	event.preventDefault();
+  	// Get a key for a new message.
+  var newMsgKey = database.ref('messages/' + room).push().key;
+database.ref('messages/' + room + '/' + newMsgKey).set({
+						        		message:message,
+						        		sender: user.id,
+						        		takers: "all"
+						        		});
+setMessage('');
+}
+
+  	          					
+
+
   	React.useEffect(() => {
       // You know that the user is loaded: either logged in or out!
 const groupsRef = database.ref('groups');
@@ -90,7 +105,8 @@ const groupsRef = database.ref('groups');
   			setGroups(tempGroups);
   		});
   		
-  		const msgRef = database.ref('cho');
+  		if (room !== null) {
+  		const msgRef = database.ref('messages/' + room);
   			const msgListener = msgRef.on('value', (snapshot) => {
   				var tempMsg = [];
   				snapshot.forEach(childSnapshot => {
@@ -100,16 +116,14 @@ const groupsRef = database.ref('groups');
                 });
   				setMessages(tempMsg);
   			});
-  			
-  		
+  	}
     
   		
         return () => {
         	groupsRef.off('value', groupsListener);
-        	msgRef.off('value', msgListener);
-        	
+
         }
-    }, []);
+    }, [room]);
 
 	return (
 		<div className={classes.root}>
@@ -120,7 +134,7 @@ const groupsRef = database.ref('groups');
 	              	<p>Here is some chat rooms</p>
 	              	{
 	                	groups.map((value,index)=>
-	                		<Chip
+	                		value && <Chip
 	                			key={index}
 						        avatar={<Avatar>value.charAt(0)</Avatar>}
 						        label={value.data.name}
@@ -165,17 +179,27 @@ const groupsRef = database.ref('groups');
         	</Box>
         		<Grid container spacing={3}>
         			<Grid item xs={3} component='ul' className={classes.grid}>
-          				<Chip
-		        avatar={<Avatar>M</Avatar>}
-		        label="Members"
-		        aria-label="list of users"
-		        clickable
-		        color="primary"
-		        onClick={(e) => {
-		        	e.preventDefault();
-	        	}}
-		        
-	   		/>
+          				
+
+          					{
+          						
+          						Object.entries(groups.find(x => x.id === room).data).map(x =>
+          										x[1].email && <Chip
+						        avatar={<Avatar>M</Avatar>}
+						        label={x[1].email}
+						        aria-label="no"
+						        clickable
+						        color="primary"
+						        onClick={(e) => {
+						        	e.preventDefault();
+					        	}}
+						        className={classes.chipGroup}
+					   		/>)
+          							}
+  
+          				
+
+          					
         			</Grid>
         			<Grid item xs={9} component='ul' className={classes.grid} direction-xs-row-reverse>
           				<ParentComponent>
@@ -183,8 +207,8 @@ const groupsRef = database.ref('groups');
       		</ParentComponent>
         			</Grid>
         			<Grid item xs={12} className={classes.gridMsg}>
-          				<form className={classes.root} noValidate autoComplete="off">
-  <TextField id="standard-basic" fullWidth label="Enter your message:" />
+          				<form className={classes.root} noValidate autoComplete="off" onSubmit={handleSubmit}>
+  <TextField autoFocus id="standard-basic" fullWidth label="Enter your message:" value={message} onChange={(e)=>{setMessage(e.target.value)}}/>
   
 </form>
         			</Grid>
@@ -203,8 +227,11 @@ const groupsRef = database.ref('groups');
 	                	}}
 	                	onClick={() => {
 	                		database.ref('groups/' + room + '/' + user.id).remove();
+	                		
 	                		setShow(false);
-	                		setRoom("");
+	                		setRoom(null);
+	                		setMessages([]);
+	                		
 	                	}}
 	              	>
 	              	    Back to rooms
