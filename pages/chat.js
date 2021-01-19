@@ -1,5 +1,8 @@
 import React from 'react';
 import { Container, Typography, Box, Button, Chip, Avatar } from '@material-ui/core';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
 import IconButton from '@material-ui/core/IconButton';
@@ -13,8 +16,9 @@ import { useUser, database } from '../utils/auth/useUser';
 
 const useStyles = makeStyles((theme) => ({
 	root: {
-    '& > *': {
+		
     	display: 'flex',
+    	flexGrow: 1,
     	flexWrap: 'wrap',
       	margin: theme.spacing(1),
       	padding: theme.spacing(1),
@@ -22,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
       	justifyContent: 'center',
       	overflow: 'hidden',
     	backgroundColor: theme.palette.background.paper,
-    },
+   
   },
   chipGroup: {
     margin: theme.spacing(0.5),
@@ -44,6 +48,32 @@ const useStyles = makeStyles((theme) => ({
   },
   }));
 
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box p={3}>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
+
+function a11yProps(index) {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  };
+}
 
 const ChildComponent = props => (
   		<Box align="left" my={0.5}>
@@ -78,30 +108,30 @@ const MyComponent = props => (
 	   		);
 
 
-  	const ParentComponent = props => (
-      <div id="children-pane">
-      {props.children}
-    </div>
-  );  
-
-  
+  	
 
 export default function Chat() {
 	const classes = useStyles();
 	const [messages, setMessages] = React.useState([]);
 	const [message, setMessage] = React.useState('');
 	const [show, setShow] = React.useState(false);
-	const [room, setRoom] = React.useState(null);
-	const [groups, setGroups] = React.useState([]);
+	const [roomID, setRoomID] = React.useState(null);
+	const [rooms, setRooms] = React.useState([]);
+	const [members, setMembers] = React.useState([]);
 	const [timejoin, setTimejoin] = React.useState(null);
   	const { user, logout } = useUser();
+  	const [value, setValue] = React.useState(0);
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
 
   	const handleSubmit = (event) => {
   	event.preventDefault();
-  	const currentTime = Math.floor(Date.now() / 1000);
+  	const currentTime = Date.now();
   	// Get a key for a new message.
-  var newMsgKey = database.ref('messages/' + room).push().key;
-database.ref('messages/' + room + '/' + newMsgKey).set({
+  var newMsgKey = database.ref('messages/' + rooms[roomID]).push().key;
+database.ref('messages/' + rooms[roomID] + '/' + newMsgKey).set({
 						        		message:message,
 						        		sender: user.id,
 						        		takers: "all",
@@ -111,13 +141,14 @@ setMessage('');
 }
 
   	const handleRoom = param => {
+  		const joinTime = Date.now();
         setShow(true);
-	   	setRoom(param);
-	   	setTimejoin(Math.floor(Date.now() / 1000));
-	   	database.ref('groups/' + param + '/' + user.id).set({
-			email: user.email,
-			nickname: "",
-			photo: user.photo?user.photo:""
+	   	setRoomID(param);
+	   	setTimejoin(joinTime);
+	   	database.ref('groups/' + rooms[param] + '/' + user.id).set({
+			nickname: user.email,
+			photo: user.photo?user.photo:null,
+			time: joinTime
 			});
     }
           					
@@ -126,27 +157,32 @@ setMessage('');
       // You know that the user is loaded: either logged in or out!
 const groupsRef = database.ref('groups');
   		const groupsListener = groupsRef.on('value', (snapshot) => {
-  			var tempGroups = [];
+  			var tempRooms = [];
+  			var tempMembers = [];
   			snapshot.forEach(childSnapshot => {
                 const key = childSnapshot.key;
                 const data = childSnapshot.val();
-                tempGroups.push({id:key,data:data});
+                tempRooms.push(key);
+                tempMembers.push(data);
                 });
-  			setGroups(tempGroups);
+  			setRooms(tempRooms);
+  			setMembers(tempMembers);
   		});
   		
-  		if (room !== null) {
-  		const msgRef = database.ref('messages/' + room);
+  		if (roomID !== null) {
+  		const msgRef = database.ref('messages/' + rooms[roomID]);
   			const msgListener = msgRef.on('value', (snapshot) => {
   				var tempMsg = [];
   				snapshot.forEach(childSnapshot => {
                 const key = childSnapshot.key;
                 const data = childSnapshot.val();
                 if (data.timestamp >= timejoin) {
-                	if (user.id==data.sender) {
+                	const sender = data.sender;
+                	if (user.id==sender) {
                 		tempMsg.push(<MyComponent key={key} msg={data.message} />);
                 	} else {
-                		tempMsg.push(<ChildComponent key={key} msg={data.message} />);
+                		var noidung = members[roomID].sender.nickname + ': ' + data.message;
+                		tempMsg.push(<ChildComponent key={key} msg={noidung} />);
                 	}
 
                 
@@ -162,7 +198,7 @@ const groupsRef = database.ref('groups');
         	groupsRef.off('value', groupsListener);
 
         }
-    }, [room]);
+    }, [roomID]);
 
 	return (
 		<div className={classes.root}>
@@ -172,15 +208,14 @@ const groupsRef = database.ref('groups');
 	            <Typography variant="h4" component="h1" gutterBottom>
 	              	<p>Here is some chat rooms</p>
 	              	{
-	                	groups.map((value,index)=>
+	                	members.map((value,index)=>
 	                		<Chip
 	                			key={index}
 						        avatar={<Avatar>value.charAt(0)</Avatar>}
-						        label={value.data.name}
-						        aria-label={value.id}
+						        label={value.name}
 						        clickable
 						        color="primary"
-						        onClick={() => handleRoom(value.id)}
+						        onClick={() => handleRoom(index)}
 						        	
 						        className={classes.chipGroup}
 					   		/>)
@@ -203,10 +238,20 @@ const groupsRef = database.ref('groups');
 	      	</Container>
       	)}
 		{show && (
-			<Container fixed disableGutters>
+			
+          	<div className={classes.root}>
+      <AppBar position="static">
+        <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
+          <Tab label="Item One" {...a11yProps(0)} />
+          <Tab label="Item Two" {...a11yProps(1)} />
+          <Tab label="Item Three" {...a11yProps(2)} />
+        </Tabs>
+      </AppBar>
+      <TabPanel value={value} index={0}>
+        <Container fixed disableGutters>
 	        <Box align="center" my={4}>
 	        	<Typography variant="h4" component="h1" gutterBottom>
-	        		Welcome to {room}
+	        		Welcome to {members[roomID].name}
         		</Typography>
         	</Box>
         		<Grid container spacing={3}>
@@ -215,10 +260,10 @@ const groupsRef = database.ref('groups');
 
           					{
           						
-          						Object.entries(groups.find(x => x.id === room).data).map(x =>
-          									x[1].email && <Chip
-						        avatar={<Avatar src={x[1].photo}></Avatar>}
-						        label={x[1].email}
+          						Object.values(members[roomID]).map(x =>
+          									x.nickname && <Chip
+						        avatar={<Avatar src={x.photo?x.photo:null}>{x.nickname.charAt(0)}</Avatar>}
+						        label={x.nickname}
 						        aria-label="no"
 						        clickable
 						        color="primary"
@@ -234,9 +279,7 @@ const groupsRef = database.ref('groups');
           					
         			</Grid>
         			<Grid item xs={9} component='ul' className={classes.grid} direction-xs-row-reverse>
-          				<ParentComponent>
-        		{messages}
-      		</ParentComponent>
+        				{messages}
         			</Grid>
         			<Grid item xs={12} className={classes.gridMsg}>
           				<form className={classes.root} noValidate autoComplete="off" onSubmit={handleSubmit}>
@@ -258,10 +301,10 @@ const groupsRef = database.ref('groups');
 	                  		cursor: 'pointer',
 	                	}}
 	                	onClick={() => {
-	                		database.ref('groups/' + room + '/' + user.id).remove();
+	                		database.ref('groups/' + rooms[roomID] + '/' + user.id).remove();
 	                		
 	                		setShow(false);
-	                		setRoom(null);
+	                		setRoomID(null);
 	                		setMessages([]);
 	                		setTimejoin(null);
 	                		
@@ -271,6 +314,14 @@ const groupsRef = database.ref('groups');
 	              	</p>
 	              	</Typography>
           	</Container>
+      </TabPanel>
+      <TabPanel value={value} index={1}>
+        Item Two
+      </TabPanel>
+      <TabPanel value={value} index={2}>
+        Item Three
+      </TabPanel>
+    </div>
 		)}
 		</div>
   )
