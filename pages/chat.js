@@ -1,13 +1,17 @@
 import React from 'react';
 import { Container, Typography, Box, Button, Chip, Avatar } from '@material-ui/core';
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormControl from '@material-ui/core/FormControl';
+import ListItemText from '@material-ui/core/ListItemText';
+import Select from '@material-ui/core/Select';
+import Checkbox from '@material-ui/core/Checkbox';
 import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
 import IconButton from '@material-ui/core/IconButton';
 import InfoIcon from '@material-ui/icons/Info';
-import { makeStyles, withStyles } from '@material-ui/core/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 
 import Link from '../src/Link';
 import ProTip from '../src/ProTip';
@@ -20,13 +24,25 @@ const useStyles = makeStyles((theme) => ({
     	display: 'flex',
     	flexGrow: 1,
     	flexWrap: 'wrap',
+    	justifyContent: 'center',
       	margin: theme.spacing(1),
       	padding: theme.spacing(1),
-      	width: '95%',
-      	justifyContent: 'center',
+      	width: '80%',
       	overflow: 'hidden',
     	backgroundColor: theme.palette.background.paper,
    
+  },
+  formControl: {
+    margin: theme.spacing(1),
+    minWidth: 500,
+    maxWidth: 1000,
+  },
+  chips: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  chip: {
+    margin: 2,
   },
   chipGroup: {
     margin: theme.spacing(0.5),
@@ -35,45 +51,18 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
   },
   grid: {
-    width: 500,
     height: 400,
     overflowY: 'auto'
   },
   gridMsg: {
-    width: 100,
-    height: 400,
+    height: 100,
   },
   icon: {
     color: 'rgba(255, 255, 255, 0.54)',
   },
   }));
 
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
 
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box p={3}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
-
-function a11yProps(index) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
 
 const ChildComponent = props => (
   		<Box align="left" my={0.5}>
@@ -107,11 +96,35 @@ const MyComponent = props => (
 	   		</Box>
 	   		);
 
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
 
-  	
+const names = [
+	'All',
+  'Oliver Hansen',
+  'Van Henry',
+  'April Tucker',
+  'Ralph Hubbard',
+  'Omar Alexander',
+  'Carlos Abbott',
+  'Miriam Wagner',
+  'Bradley Wilkerson',
+  'Virginia Andrews',
+  'Kelly Snyder',
+];  	
+
 
 export default function Chat() {
 	const classes = useStyles();
+	const theme = useTheme();
 	const [messages, setMessages] = React.useState([]);
 	const [message, setMessage] = React.useState('');
 	const [show, setShow] = React.useState(false);
@@ -120,11 +133,12 @@ export default function Chat() {
 	const [members, setMembers] = React.useState([]);
 	const [timejoin, setTimejoin] = React.useState(null);
   	const { user, logout } = useUser();
-  	const [value, setValue] = React.useState(0);
+  	const [personName, setPersonName] = React.useState([]);
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
+  const handleChange = (event) => {
+    setPersonName(event.target.value);
   };
+  	
 
   	const handleSubmit = (event) => {
   	event.preventDefault();
@@ -238,24 +252,14 @@ const groupsRef = database.ref('groups');
 	      	</Container>
       	)}
 		{show && (
-			
-          	<div className={classes.root}>
-      <AppBar position="static">
-        <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
-          <Tab label="Item One" {...a11yProps(0)} />
-          <Tab label="Item Two" {...a11yProps(1)} />
-          <Tab label="Item Three" {...a11yProps(2)} />
-        </Tabs>
-      </AppBar>
-      <TabPanel value={value} index={0}>
-        <Container fixed disableGutters>
+			<Container fixed disableGutters>
 	        <Box align="center" my={4}>
 	        	<Typography variant="h4" component="h1" gutterBottom>
 	        		Welcome to {members[roomID].name}
         		</Typography>
-        	</Box>
+        	
         		<Grid container spacing={3}>
-        			<Grid item xs={3} component='ul' className={classes.grid}>
+        			<Grid item xs={2} component='ul' className={classes.grid}>
           				
 
           					{
@@ -278,9 +282,36 @@ const groupsRef = database.ref('groups');
 
           					
         			</Grid>
-        			<Grid item xs={9} component='ul' className={classes.grid} direction-xs-row-reverse>
+        			<Grid item xs={10} component='ul' className={classes.grid} direction-xs-row-reverse>
         				{messages}
         			</Grid>
+        			
+        			<Grid item xs={12} className={classes.gridMsg}>
+        			<FormControl className={classes.formControl}>
+        <InputLabel id="demo-mutiple-chip-label">Send to:</InputLabel>
+        <Select
+          labelId="demo-mutiple-chip-label"
+          id="demo-mutiple-chip"
+          multiple
+          value={personName}
+          onChange={handleChange}
+          input={<Input />}
+          renderValue={(selected) => selected.join(', ')}
+            
+          
+          MenuProps={MenuProps}
+        >
+          {names.map((name) => (
+            <MenuItem key={name} value={name}>
+              <Checkbox checked={personName.indexOf(name) > -1} />
+              <ListItemText primary={name} />
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+</Grid>
+
         			<Grid item xs={12} className={classes.gridMsg}>
           				<form className={classes.root} noValidate autoComplete="off" onSubmit={handleSubmit}>
   <TextField autoFocus id="standard-basic" fullWidth label="Enter your message:" value={message} onChange={(e)=>{setMessage(e.target.value)}}/>
@@ -313,15 +344,8 @@ const groupsRef = database.ref('groups');
 	              	    Back to rooms
 	              	</p>
 	              	</Typography>
+	              	</Box>
           	</Container>
-      </TabPanel>
-      <TabPanel value={value} index={1}>
-        Item Two
-      </TabPanel>
-      <TabPanel value={value} index={2}>
-        Item Three
-      </TabPanel>
-    </div>
 		)}
 		</div>
   )
