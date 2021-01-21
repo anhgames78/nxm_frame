@@ -43,32 +43,29 @@ const useStyles = makeStyles((theme) => ({
 
 
 
-const ChildComponent = props => (
+const YourMessage = props => (
   		<Box align="left" my={0.5}>
-  		<Chip
-		        avatar={<Avatar></Avatar>}
+  			<Chip
+		        avatar={<Avatar src={(props.photo === "no")?null:props.photo}><Face /></Avatar>}
 		        key={props.key}
 		        label={props.msg}
-		        aria-label="msg from other users"
-		        clickable
-		        color="secondary"
+		        aria-label="message to mine"
+		        color={props.color}
 		        onClick={(e) => {
 		        	e.preventDefault();
 	        	}}
-		        
-	   		/>
+		    />
 	   		</Box>
 	   		);
 
-const MyComponent = props => (
+const MyMessage = props => (
   		<Box align="right" my={0.5}>
   		<Chip
-		        
 		        key={props.key}
 		        label={props.msg}
-		        aria-label="my message"
-		        
-		        color="primary"
+		        aria-label="message from mine"
+   
+		        color={props.color}
 		        
 		        
 	   		/>
@@ -88,8 +85,9 @@ export default function Chat() {
 	const [members, setMembers] = React.useState([]);
 	const [timejoin, setTimejoin] = React.useState(null);
   	const { user, logout } = useUser();
-  	const [listTakers, setListTakers] = React.useState(["All members"]);
+  	const [listTakers, setListTakers] = React.useState(["ALL"]);
   	const [test, setTest] = React.useState(true);
+  	const [nick, setNick] = React.useState('');
 
   const handleDelete = (event) => {
   	event.preventDefault();
@@ -105,7 +103,7 @@ export default function Chat() {
 database.ref('messages/' + rooms[roomID] + '/' + newMsgKey).set({
 						        		message:message,
 						        		sender: user.id,
-						        		takers: "all",
+						        		takers: listTakers,
 						        		timestamp: currentTime
 						        		});
 setMessage('');
@@ -116,9 +114,11 @@ setMessage('');
         setShow(true);
 	   	setRoomID(param);
 	   	setTimejoin(joinTime);
+	   	setNick(user.email);
+	   	setListTakers(["ALL"]);
 	   	database.ref('groups/' + rooms[param] + '/' + user.id).set({
 			nickname: user.email,
-			photo: user.photo?user.photo:null,
+			photo: user.photo?user.photo:"no",
 			time: joinTime
 			});
     }
@@ -149,11 +149,22 @@ const groupsRef = database.ref('groups');
                 const data = childSnapshot.val();
                 if (data.timestamp >= timejoin) {
                 	const sender = data.sender;
-                	if (user.id==sender) {
-                		tempMsg.push(<MyComponent key={key} msg={data.message} />);
-                	} else {
-                		var noidung = members[roomID].sender.nickname + ': ' + data.message;
-                		tempMsg.push(<ChildComponent key={key} msg={noidung} />);
+                	
+	               	if (user.id==sender) {
+                		if (data.takers.indexOf("ALL") > -1) {
+                			var noidung = "You sent to all: " + data.message;
+                			tempMsg.push(<MyMessage key={key} msg={noidung} color="primary" />);
+                		} else {
+                			var noidung = "You sent to " + data.takers.join(', ') + ": " + data.message;
+                			tempMsg.push(<MyMessage key={key} msg={noidung} color="secondary" />);
+                		}
+                		
+                	} else if (data.takers.indexOf("ALL") > -1)  {
+                		const noidung = members[roomID].sender.nickname + ' sent to all: ' + data.message;
+                		tempMsg.push(<YourMessage key={key} msg={noidung} color="primary" photo={members[roomID].sender.photo} />);
+                	} else if (data.takers.indexOf(nick) > -1) {
+                		const noidung = members[roomID].sender.nickname + ' sent to you: ' + data.message;
+                		tempMsg.push(<YourMessage key={key} msg={noidung} color="secondary" photo={members[roomID].sender.photo} />);
                 	}
 
                 
@@ -223,11 +234,12 @@ const groupsRef = database.ref('groups');
           						
           						Object.values(members[roomID]).map(x =>
           									x.nickname && <Chip
-						        avatar={<Avatar src={x.photo?x.photo:null}><Face /></Avatar>}
+						        avatar={<Avatar src={(x.photo === "no")?null:x.photo}><Face /></Avatar>}
 						        label={x.nickname}
 						        aria-label="no"
 						        clickable
         						color="primary"
+        						onClick={handleDelete}
         						onDelete={handleDelete}
         						deleteIcon={test?<ChatBubbleOutline />:<ChatIcon />}
 						        className={classes.chipGroup}
@@ -244,7 +256,7 @@ const groupsRef = database.ref('groups');
 
         			<Grid item xs={2} className={classes.gridMsg}>
         				<Button variant="contained" color="primary">
-  							Chat All
+  							Change nickname
 						</Button>
         			</Grid>
         			
@@ -263,10 +275,15 @@ const groupsRef = database.ref('groups');
         />
 
 </Grid>
+<Grid item xs={2} className={classes.gridMsg}>
+        				<Button variant="contained" color="primary">
+  							Chat All
+						</Button>
+        			</Grid>
 
-        			<Grid item xs={12} className={classes.gridMsg}>
+        			<Grid item xs={10} className={classes.gridMsg}>
           				<form className={classes.root} noValidate autoComplete="off" onSubmit={handleSubmit}>
-  <TextField autoFocus id="standard-basic" fullWidth label="Enter your message:" value={message} onChange={(e)=>{setMessage(e.target.value)}}/>
+  <TextField id="standard-basic" fullWidth label="Enter your message:" value={message} onChange={(e)=>{setMessage(e.target.value)}}/>
   
 </form>
         			</Grid>
@@ -285,13 +302,8 @@ const groupsRef = database.ref('groups');
 	                	}}
 	                	onClick={() => {
 	                		database.ref('groups/' + rooms[roomID] + '/' + user.id).remove();
-	                		
 	                		setShow(false);
-	                		setRoomID(null);
 	                		setMessages([]);
-	                		setTimejoin(null);
-	                		setListTakers(["All members"]);
-	                		
 	                	}}
 	              	>
 	              	    Back to rooms
