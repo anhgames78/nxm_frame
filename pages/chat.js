@@ -1,17 +1,10 @@
 import React from 'react';
 import { Container, Typography, Box, Button, Chip, Avatar } from '@material-ui/core';
-import Input from '@material-ui/core/Input';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import ListItemText from '@material-ui/core/ListItemText';
-import Select from '@material-ui/core/Select';
-import Checkbox from '@material-ui/core/Checkbox';
 import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
-import IconButton from '@material-ui/core/IconButton';
-import InfoIcon from '@material-ui/icons/Info';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { Face, ChatBubbleOutline } from '@material-ui/icons';
+import ChatIcon from '@material-ui/icons/Chat';
+import { makeStyles } from '@material-ui/core/styles';
 
 import Link from '../src/Link';
 import ProTip from '../src/ProTip';
@@ -32,18 +25,6 @@ const useStyles = makeStyles((theme) => ({
     	backgroundColor: theme.palette.background.paper,
    
   },
-  formControl: {
-    margin: theme.spacing(1),
-    minWidth: 500,
-    maxWidth: 1000,
-  },
-  chips: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
-  chip: {
-    margin: 2,
-  },
   chipGroup: {
     margin: theme.spacing(0.5),
     display: 'flex',
@@ -57,9 +38,7 @@ const useStyles = makeStyles((theme) => ({
   gridMsg: {
     height: 100,
   },
-  icon: {
-    color: 'rgba(255, 255, 255, 0.54)',
-  },
+  
   }));
 
 
@@ -96,35 +75,11 @@ const MyComponent = props => (
 	   		</Box>
 	   		);
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-  PaperProps: {
-    style: {
-      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-      width: 250,
-    },
-  },
-};
 
-const names = [
-	'All',
-  'Oliver Hansen',
-  'Van Henry',
-  'April Tucker',
-  'Ralph Hubbard',
-  'Omar Alexander',
-  'Carlos Abbott',
-  'Miriam Wagner',
-  'Bradley Wilkerson',
-  'Virginia Andrews',
-  'Kelly Snyder',
-];  	
 
 
 export default function Chat() {
 	const classes = useStyles();
-	const theme = useTheme();
 	const [messages, setMessages] = React.useState([]);
 	const [message, setMessage] = React.useState('');
 	const [show, setShow] = React.useState(false);
@@ -133,18 +88,20 @@ export default function Chat() {
 	const [members, setMembers] = React.useState([]);
 	const [timejoin, setTimejoin] = React.useState(null);
   	const { user, logout } = useUser();
-  	const [personName, setPersonName] = React.useState([]);
+  	const [listTakers, setListTakers] = React.useState(["All members"]);
+  	const [test, setTest] = React.useState(true);
 
-  const handleChange = (event) => {
-    setPersonName(event.target.value);
-  };
-  	
+  const handleDelete = (event) => {
+  	event.preventDefault();
+  	setTest(!test);
+  }
 
   	const handleSubmit = (event) => {
   	event.preventDefault();
   	const currentTime = Date.now();
   	// Get a key for a new message.
   var newMsgKey = database.ref('messages/' + rooms[roomID]).push().key;
+  	
 database.ref('messages/' + rooms[roomID] + '/' + newMsgKey).set({
 						        		message:message,
 						        		sender: user.id,
@@ -266,14 +223,13 @@ const groupsRef = database.ref('groups');
           						
           						Object.values(members[roomID]).map(x =>
           									x.nickname && <Chip
-						        avatar={<Avatar src={x.photo?x.photo:null}>{x.nickname.charAt(0)}</Avatar>}
+						        avatar={<Avatar src={x.photo?x.photo:null}><Face /></Avatar>}
 						        label={x.nickname}
 						        aria-label="no"
 						        clickable
-						        color="primary"
-						        onClick={(e) => {
-						        	e.preventDefault();
-					        	}}
+        						color="primary"
+        						onDelete={handleDelete}
+        						deleteIcon={test?<ChatBubbleOutline />:<ChatIcon />}
 						        className={classes.chipGroup}
 					   		/>)
           							}
@@ -285,30 +241,26 @@ const groupsRef = database.ref('groups');
         			<Grid item xs={10} component='ul' className={classes.grid} direction-xs-row-reverse>
         				{messages}
         			</Grid>
+
+        			<Grid item xs={2} className={classes.gridMsg}>
+        				<Button variant="contained" color="primary">
+  							Chat All
+						</Button>
+        			</Grid>
         			
-        			<Grid item xs={12} className={classes.gridMsg}>
-        			<FormControl className={classes.formControl}>
-        <InputLabel id="demo-mutiple-chip-label">Send to:</InputLabel>
-        <Select
-          labelId="demo-mutiple-chip-label"
-          id="demo-mutiple-chip"
-          multiple
-          value={personName}
-          onChange={handleChange}
-          input={<Input />}
-          renderValue={(selected) => selected.join(', ')}
-            
-          
-          MenuProps={MenuProps}
-        >
-          {names.map((name) => (
-            <MenuItem key={name} value={name}>
-              <Checkbox checked={personName.indexOf(name) > -1} />
-              <ListItemText primary={name} />
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+        			<Grid item xs={10} className={classes.gridMsg}>
+        			
+
+      <TextField
+          id="outlined-read-only-input"
+          fullWidth
+          label="Chat to: "
+          defaultValue={listTakers.join(', ')}
+          InputProps={{
+            readOnly: true,
+          }}
+          variant="outlined"
+        />
 
 </Grid>
 
@@ -338,6 +290,7 @@ const groupsRef = database.ref('groups');
 	                		setRoomID(null);
 	                		setMessages([]);
 	                		setTimejoin(null);
+	                		setListTakers(["All members"]);
 	                		
 	                	}}
 	              	>
