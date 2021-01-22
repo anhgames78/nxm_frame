@@ -102,7 +102,7 @@ export default function Chat() {
   	
 database.ref('messages/' + rooms[roomID] + '/' + newMsgKey).set({
 						        		message:message,
-						        		sender: user.id,
+						        		senderID: user.id,
 						        		takers: listTakers,
 						        		timestamp: currentTime
 						        		});
@@ -148,9 +148,12 @@ const groupsRef = database.ref('groups');
                 const key = childSnapshot.key;
                 const data = childSnapshot.val();
                 if (data.timestamp >= timejoin) {
-                	const sender = data.sender;
                 	
-	               	if (user.id==sender) {
+                	const listMembers = members[roomID];
+                	const senderID = data.senderID;
+                	const sender = listMembers[senderID];
+                	
+	               	if (user.id==senderID) {
                 		if (data.takers.indexOf("ALL") > -1) {
                 			var noidung = "You sent to all: " + data.message;
                 			tempMsg.push(<MyMessage key={key} msg={noidung} color="primary" />);
@@ -160,11 +163,11 @@ const groupsRef = database.ref('groups');
                 		}
                 		
                 	} else if (data.takers.indexOf("ALL") > -1)  {
-                		const noidung = members[roomID].sender.nickname + ' sent to all: ' + data.message;
-                		tempMsg.push(<YourMessage key={key} msg={noidung} color="primary" photo={members[roomID].sender.photo} />);
+                		const noidung = sender["nickname"] + ' sent to all: ' + data.message;
+                		tempMsg.push(<YourMessage key={key} msg={noidung} color="primary" photo={sender.photo} />);
                 	} else if (data.takers.indexOf(nick) > -1) {
-                		const noidung = members[roomID].sender.nickname + ' sent to you: ' + data.message;
-                		tempMsg.push(<YourMessage key={key} msg={noidung} color="secondary" photo={members[roomID].sender.photo} />);
+                		const noidung = sender["nickname"] + ' sent to you: ' + data.message;
+                		tempMsg.push(<YourMessage key={key} msg={noidung} color="secondary" photo={sender.photo} />);
                 	}
 
                 
@@ -193,8 +196,8 @@ const groupsRef = database.ref('groups');
 	                	members.map((value,index)=>
 	                		<Chip
 	                			key={index}
-						        avatar={<Avatar>value.charAt(0)</Avatar>}
-						        label={value.name}
+						        avatar={<Avatar>{value.description.nickname.charAt(0)}</Avatar>}
+						        label={value.description.nickname}
 						        clickable
 						        color="primary"
 						        onClick={() => handleRoom(index)}
@@ -223,7 +226,7 @@ const groupsRef = database.ref('groups');
 			<Container fixed disableGutters>
 	        <Box align="center" my={4}>
 	        	<Typography variant="h4" component="h1" gutterBottom>
-	        		Welcome to {members[roomID].name}
+	        		Welcome to {members[roomID].description.nickname}
         		</Typography>
         	
         		<Grid container spacing={3}>
@@ -233,7 +236,7 @@ const groupsRef = database.ref('groups');
           					{
           						
           						Object.values(members[roomID]).map(x =>
-          									x.nickname && <Chip
+          									(x.time != 0) && <Chip
 						        avatar={<Avatar src={(x.photo === "no")?null:x.photo}><Face /></Avatar>}
 						        label={x.nickname}
 						        aria-label="no"
