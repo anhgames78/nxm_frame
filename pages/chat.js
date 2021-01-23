@@ -43,20 +43,20 @@ const useStyles = makeStyles((theme) => ({
 
 
 
-const YourMessage = props => (
-  		<Box align="left" my={0.5}>
+const YourMessage = props => {
+	return (
+			<Box align="left" my={0.5}>
   			<Chip
 		        avatar={<Avatar src={(props.photo === "no")?null:props.photo}><Face /></Avatar>}
 		        key={props.key}
 		        label={props.msg}
 		        aria-label="message to mine"
 		        color={props.color}
-		        onClick={(e) => {
-		        	e.preventDefault();
-	        	}}
+
 		    />
 	   		</Box>
 	   		);
+	   	}
 
 const MyMessage = props => (
   		<Box align="right" my={0.5}>
@@ -86,13 +86,29 @@ export default function Chat() {
 	const [timejoin, setTimejoin] = React.useState(null);
   	const { user, logout } = useUser();
   	const [listTakers, setListTakers] = React.useState(["ALL"]);
-  	const [test, setTest] = React.useState(true);
   	const [nick, setNick] = React.useState('');
 
-  const handleDelete = (event) => {
-  	event.preventDefault();
-  	setTest(!test);
-  }
+
+  	  const handleDelete = param => {
+  	  	
+    if (listTakers.indexOf("ALL") > -1) {
+  		setListTakers([param]);	
+  		} else if (listTakers.indexOf(param) > -1) {
+
+  			if (listTakers.length == 1) {
+  				setListTakers(["ALL"]);
+  			} else {
+  				setListTakers(listTakers.splice(listTakers.indexOf(param),1));
+  			}
+  			
+  		} else   {
+
+  		setListTakers(listTakers.push(param));
+  	  	}
+
+ } 	
+
+ 
 
   	const handleSubmit = (event) => {
   	event.preventDefault();
@@ -242,9 +258,9 @@ const groupsRef = database.ref('groups');
 						        aria-label="no"
 						        clickable
         						color="primary"
-        						onClick={handleDelete}
-        						onDelete={handleDelete}
-        						deleteIcon={test?<ChatBubbleOutline />:<ChatIcon />}
+        						onClick={() => handleDelete(x.nickname)}
+        						onDelete={() => handleDelete(x.nickname)}
+        						deleteIcon={(listTakers.indexOf(x.nickname) > -1)?<ChatIcon />:<ChatBubbleOutline />}
 						        className={classes.chipGroup}
 					   		/>)
           							}
@@ -270,7 +286,7 @@ const groupsRef = database.ref('groups');
           id="outlined-read-only-input"
           fullWidth
           label="Chat to: "
-          defaultValue={listTakers.join(', ')}
+          value={listTakers.join(', ')}
           InputProps={{
             readOnly: true,
           }}
